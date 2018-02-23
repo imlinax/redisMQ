@@ -2,6 +2,7 @@ package redisMQ
 
 import (
 	"github.com/garyburd/redigo/redis"
+	"github.com/golang/glog"
 	//"time"
 )
 
