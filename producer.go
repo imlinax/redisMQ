@@ -20,7 +20,7 @@ func (p *producer) Close() error {
 }
 
 func (p *producer) SendMessage(msg string) error {
-	_, err := p.conn.Do("LPUSH", p.topic, msg)
+	_, err := p.conn.Do("RPUSH", p.topic, msg)
 	if err != nil {
 		return err
 	}
