@@ -8,31 +8,50 @@ import (
 
 type Consumer interface {
 	Close() error
-	GetMessage() (*string, error)
+	ConsumeTopic(topic string)
+	Messages() <-chan *string
 }
 
 type consumer struct {
-	conn  redis.Conn
-	topic string
+	conn     redis.Conn
+	topic    string
+	messages chan *string
 }
 
 func (c *consumer) Close() error {
 	return c.conn.Close()
 }
 
-func (c *consumer) GetMessage() (*string, error) {
+func (c *consumer) ConsumeTopic(topic string) {
+	c.topic = topic
+	go func() {
+		for {
+			str, err := c.getOneMessage()
+			if err != nil {
+				glog.Errorln(err)
+				break
+			}
+			c.messages <- str
+		}
+	}()
+}
+func (c *consumer) Messages() <-chan *string {
+	return c.messages
+}
+func (c *consumer) getOneMessage() (*string, error) {
 	reply, err := redis.Values(c.conn.Do("BLPOP", c.topic, 0))
 
 	if err != nil {
 		return nil, err
 	}
 
+	var topic string
 	var message string
-	_, err = redis.Scan(reply, &message)
+	_, err = redis.Scan(reply, &topic, &message)
+
 	return &message, nil
 }
-
-func NewConsumer(redisConnectStr, topic string) (Consumer, error) {
+func NewConsumer(redisConnectStr string) (Consumer, error) {
 
 	//connTimeout := time.Duration(30) * time.Second
 	// procTimeout := time.Duration(30) * time.Second
@@ -44,9 +63,8 @@ func NewConsumer(redisConnectStr, topic string) (Consumer, error) {
 		return nil, err
 	}
 
-	c := &consumer{
-		conn:  conn,
-		topic: topic}
+	c := &consumer{conn: conn,
+		messages: make(chan *string, 1)}
 
 	return c, nil
 
