@@ -8,7 +8,6 @@ import (
 
 type Consumer interface {
 	Close() error
-	ConsumeTopic(topic string)
 	Messages() <-chan *string
 }
 
@@ -22,7 +21,7 @@ func (c *consumer) Close() error {
 	return c.conn.Close()
 }
 
-func (c *consumer) ConsumeTopic(topic string) {
+func (c *consumer) consumeTopic(topic string) {
 	c.topic = topic
 	go func() {
 		for {
@@ -51,7 +50,7 @@ func (c *consumer) getOneMessage() (*string, error) {
 
 	return &message, nil
 }
-func NewConsumer(redisConnectStr string) (Consumer, error) {
+func NewConsumer(redisConnectStr, topic string) (Consumer, error) {
 
 	//connTimeout := time.Duration(30) * time.Second
 	// procTimeout := time.Duration(30) * time.Second
@@ -66,6 +65,7 @@ func NewConsumer(redisConnectStr string) (Consumer, error) {
 	c := &consumer{conn: conn,
 		messages: make(chan *string, 1)}
 
+	c.consumeTopic(topic)
 	return c, nil
 
 }

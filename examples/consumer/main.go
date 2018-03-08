@@ -13,12 +13,9 @@ func main() {
 		os.Exit(1)
 	}
 	for {
-		message, err := consumer.GetMessage()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+		select {
+		case msg := <-consumer.Messages():
+			fmt.Println(*msg)
 		}
-		fmt.Println(*message)
-
 	}
 }

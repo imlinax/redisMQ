@@ -17,10 +17,8 @@ func TestConsumer(t *testing.T) {
 	message := "ahaha"
 	conn.Do("RPUSH", topic, message)
 
-	c, err := NewConsumer(redisConnStr)
+	c, err := NewConsumer(redisConnStr, topic)
 	assert.NoError(t, err)
-
-	c.ConsumeTopic(topic)
 
 	msg := <-c.Messages()
 
