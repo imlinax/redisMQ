@@ -2,7 +2,6 @@ package redisMQ
 
 import (
 	"github.com/garyburd/redigo/redis"
-	"github.com/golang/glog"
 	//"time"
 )
 
@@ -27,7 +26,7 @@ func (c *consumer) consumeTopic(topic string) {
 		for {
 			str, err := c.getOneMessage()
 			if err != nil {
-				glog.Errorln(err)
+				c.Close()
 				break
 			}
 			c.messages <- str
@@ -58,7 +57,6 @@ func NewConsumer(redisConnectStr, topic string) (Consumer, error) {
 	// conn, err := redis.DialTimeout("tcp", redisConnectStr, connTimeout, procTimeout, procTimeout)
 	conn, err := redis.Dial("tcp", redisConnectStr)
 	if err != nil {
-		glog.Error(err)
 		return nil, err
 	}
 

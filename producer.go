@@ -2,7 +2,6 @@ package redisMQ
 
 import (
 	"github.com/garyburd/redigo/redis"
-	"github.com/golang/glog"
 )
 
 type Producer interface {
@@ -35,7 +34,6 @@ func NewProducer(redisConnectStr, topic string) (Producer, error) {
 	// conn, err := redis.DialTimeout("tcp", redisConnectStr, connTimeout, procTimeout, procTimeout)
 	conn, err := redis.Dial("tcp", redisConnectStr)
 	if err != nil {
-		glog.Error(err)
 		return nil, err
 	}
 
