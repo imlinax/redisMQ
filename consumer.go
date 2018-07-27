@@ -2,6 +2,7 @@ package redisMQ
 
 import (
 	"github.com/garyburd/redigo/redis"
+	"sync"
 	//"time"
 )
 
@@ -14,10 +15,15 @@ type consumer struct {
 	conn     redis.Conn
 	topic    string
 	messages chan *string
+	once     sync.Once
 }
 
 func (c *consumer) Close() error {
-	return c.conn.Close()
+	c.once.Do(func() {
+		close(c.messages)
+		c.conn.Close()
+	})
+	return nil
 }
 
 func (c *consumer) consumeTopic(topic string) {
